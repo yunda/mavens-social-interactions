@@ -29,7 +29,7 @@ h1{
 .scroll_wrapper{
     overflow-y: hidden;
     overflow-x: auto;
-    visibility: hidden;
+/*    visibility: hidden;*/
 }
 
 #chart{
