@@ -14,24 +14,24 @@
             <select id="video_select"></select>
 
             <section id="options_bar">
-                <nav class="switcher" id="activity_switcher">
-                    <span class="active">Views</span>
-                    <span>Shares</span>
-                    <span>Likes</span>
+                <nav class="switcher" id="activity_switcher" data-action="switchActivity">
+                    <span data-value="views" class="active">Views</span>
+                    <span data-value="shares">Shares</span>
+                    <span data-value="likes">Likes</span>
                 </nav>
-                <nav class="switcher" id="data_type_switcher">
-                    <span class="active">Daily</span>
-                    <span>Gross</span>
+                <nav class="switcher" id="period_switcher" data-action="switchPeriod">
+                    <span data-value="daily" class="active">Daily</span>
+                    <span data-value="gross">Gross</span>
                 </nav>
             </section>
-            <div id="graph_holder">
+            <div id="chart_holder">
                 <div class="scroll_wrapper">
-                    <section id="graph"></section>
+                    <section id="chart"></section>
                 </div>
                 <section id="scale"></section>
             </div>
             <section id="brands_holder"></section>
         </section>
-        <script src="./js/app.js"></script>
+        <script src="./static/bundle.js"></script>
     </body>
 </html>
