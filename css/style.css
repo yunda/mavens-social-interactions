@@ -1,12 +1,95 @@
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,400,300,700);
+
 #main{
     width: 960px;
     margin: 0 auto;
     padding: 40px;
 }
 
+#graph_holder{
+    position: relative;
+}
+
+#scale{
+    position: absolute;
+    right: -50px;
+    top: -10px;
+}
+
+.scroll_wrapper{
+    overflow-y: hidden;
+    overflow-x: auto;
+    visibility: hidden;
+}
+
 #graph{
-	overflow-y: hidden;
-	overflow-x: scroll;
-    height: 320px;
-    border: 1px solid #ccc;
+    font-family: 'Open Sans', sans-serif;
+    height: 340px;
+    visibility: visible;
+}
+
+
+
+.timeline{
+    shape-rendering: crispEdges;
+    stroke: #ccc;
+}
+
+.month_tick line{
+    shape-rendering: crispEdges;
+    stroke: #ccc;
+}
+
+.month_tick text{
+    font-weight: 300;
+    font-size: 32px;
+    fill: rgba(0,0,0,0.15);
+}
+
+.axis{
+    transform: translate(0, 10px);
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis text {
+  font: 10px sans-serif;
+}
+
+.bar text{
+    fill: rgba(101, 101, 101, 1);
+    font-size: 13px;
+    text-anchor: middle;
+}
+
+.bar .date{
+    fill: rgba(101, 101, 101, 1);
+    font-size: 12px;
+    text-anchor: middle;
+}
+
+.bar .circle{
+    stroke: rgba(57, 186, 130, 1);
+    stroke-width: 2;
+    fill: #fff;
+}
+.bar .circle_stroke{
+    stroke: #fff;
+    stroke-width: 2;
+    fill: #fff;
+}
+
+.curve{
+    fill: none;
+    stroke-width: 2;
+    stroke: rgba(57, 186, 130, 1);
+}
+
+.area{
+    fill: rgba(57, 186, 130, 0.3);
 }
