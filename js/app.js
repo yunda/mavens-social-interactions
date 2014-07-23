@@ -34,10 +34,6 @@
         residue = value % testNumber;
         rounded = value + (testNumber - residue);
 
-        // max = rounded + testNumber;
-
-        // console.log(testNumber);
-
         if ( value < 100 ){
             rounded = rounded.toString().split('');
             rounded[0] = +rounded[0] > 5 ? '10': '5';
@@ -45,7 +41,7 @@
         } else {
             max = rounded;
         }
-        
+
         return max;
     }
 
@@ -94,7 +90,7 @@
                     });
 
                     console.log(i * barWidth);
-                    
+
                     currentMonth = month;
                 }
             }
@@ -131,7 +127,7 @@
                 'transform': function(d, i) { console.log(d.margin); return 'translate(' + d.margin + ', 0)'; },
                 'class': 'month_tick'
             });
-        
+
         monthTick.append('line')
             .attr({
                 'x1': 0,
@@ -158,8 +154,6 @@
                 .ticks(4)
                 .tickFormat( d3.format('s') ) );
 
-
-
         // draw bars
 
         if ( daily ){
@@ -167,8 +161,6 @@
         } else {
             drawGrossBars(data, y);
         }
-        
-        
     }
 
     function drawDailyBars (data, y) {
@@ -191,7 +183,7 @@
                     return height - y(d.value);
                 },
                 'transform': function (d, i) {
-                    return 'translate(0,'+ y(d.value) + ')'; 
+                    return 'translate(0,'+ y(d.value) + ')';
                 }
             });
 
@@ -200,9 +192,9 @@
                 'shape-rendering': 'crispEdges',
                 'fill': 'rgba(57, 186, 130, 1)',
                 'width': barWidth,
-                'height': 1,
+                'height': 2,
                 'transform': function (d, i) {
-                    return 'translate(0,'+ y(d.value) + ')'; 
+                    return 'translate(0,'+ y(d.value) + ')';
                 }
             });
 
@@ -258,7 +250,7 @@
         bar.append('circle')
             .attr({
                 'class': 'circle_stroke',
-                'r': 7,
+                'r': 6,
                 'cx': barWidth / 2,
                 'cy': function (d){
                     return Math.round(y(d.value));
@@ -268,7 +260,7 @@
         bar.append('circle')
             .attr({
                 'class': 'circle',
-                'r': 5,
+                'r': 4,
                 'cx': barWidth / 2,
                 'cy': function (d){
                     return Math.round(y(d.value));
@@ -276,18 +268,18 @@
             });
 
         drawTimeline(bar);
-        
+
     }
 
     function drawTimeline (bar){
-        // days 
+        // days
         bar.append('text')
             .attr({
                 'x': barWidth / 2,
                 'y': height + 15,
                 'class': 'date'
             })
-            .text( function(d){ 
+            .text( function(d){
                 return d.key.getDate();
             });
 

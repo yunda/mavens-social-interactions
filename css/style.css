@@ -1,5 +1,15 @@
 @import url(http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,400,300,700);
 
+body{
+    font-family: 'Open Sans', sans-serif;
+}
+
+h1{
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 30px;
+}
+
 #main{
     width: 960px;
     margin: 0 auto;
@@ -43,7 +53,7 @@
 .month_tick text{
     font-weight: 300;
     font-size: 32px;
-    fill: rgba(0,0,0,0.15);
+    fill: rgba(0,0,0,0.25);
 }
 
 .axis{
@@ -92,4 +102,48 @@
 
 .area{
     fill: rgba(57, 186, 130, 0.3);
+}
+
+#video_select{
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+#options_bar{
+    position: relative;
+    height: 40px;
+    margin-bottom: 20px;
+}
+
+.switcher{
+    position: absolute;
+    top: 0;
+    color: #0a68ab;
+    font-size: 16px;
+}
+
+.switcher span{
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 7px;
+    border-bottom: 1px dotted;
+    cursor: pointer;
+    line-height: 1.5;
+}
+.switcher .active{
+    padding: 0 10px;
+    background: #0a68ab;
+    color: #fff;
+    border-radius: 5px;
+    border-bottom: none;
+}
+
+#activity_switcher{
+    left: 0;
+    margin-left: -7px;
+}
+
+#data_type_switcher{
+    right: 0;
+    margin-right: -7px;
 }
