@@ -10,6 +10,10 @@ h1{
     margin-bottom: 30px;
 }
 
+.hidden{
+    visibility: hidden;
+}
+
 #main{
     max-width: 960px;
     margin: 0 auto;
@@ -21,6 +25,7 @@ h1{
 }
 
 #scale{
+    width: 60px;
     position: absolute;
     right: -60px;
     top: -10px;
@@ -33,9 +38,11 @@ h1{
 }
 
 #chart{
+    position: relative;
     font-family: 'Open Sans', sans-serif;
     height: 340px;
     visibility: visible;
+    z-index: 2;
 }
 
 
@@ -45,12 +52,27 @@ h1{
     stroke: #ccc;
 }
 
+#month_tile{
+    position: absolute;
+    width: 200px;
+    height: 300px;
+    left: 0;
+    top: 0;
+    z-index: 1;
+}
+
 .month_tick line{
     shape-rendering: crispEdges;
     stroke: #ccc;
 }
 
-.month_tick text{
+.month_tick .month_tick_month{
+    font-weight: 400;
+    font-size: 32px;
+    fill: rgba(0,0,0,0.25);
+}
+
+.month_tick .month_tick_year{
     font-weight: 300;
     font-size: 32px;
     fill: rgba(0,0,0,0.25);
