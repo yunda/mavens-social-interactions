@@ -10,6 +10,10 @@ h1{
     margin-bottom: 30px;
 }
 
+.hidden{
+    visibility: hidden;
+}
+
 #main{
     max-width: 960px;
     margin: 0 auto;
@@ -54,7 +58,6 @@ h1{
     height: 300px;
     left: 0;
     top: 0;
-    outline: 1px solid red;
     z-index: 1;
 }
 

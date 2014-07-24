@@ -36,21 +36,10 @@ Chart.prototype.init = function (data){
 
     this.render(chartData);
 
-    var sl = 0;
     scrollWrapper.on('scroll', function (){
         var scrollLeft = this.scrollLeft;
 
-        self.monthTicksOffsets.forEach(function (offset, i){
-            var relativeOffset = offset - scrollLeft;
-
-            if ( relativeOffset > 0 && relativeOffset < 200 ) {
-                d3.select(self.tileMonthTicks[0][0]).attr('transform', 'translate(' + (relativeOffset - 200) + ', 0)');
-
-                console.log('move tile');
-            } else if ( relativeOffset === 0) {
-                console.log('change tile');
-            }
-        });
+        self._placeRightTile(scrollLeft);
     });
 };
 
@@ -83,7 +72,8 @@ Chart.prototype._getMonthsData = function (chartData){
 };
 
 Chart.prototype._drawMonthTicks = function (monthsData){
-    var monthTicks = chart.append('g')
+    var scrollLeft = scrollWrapper.node().scrollLeft,
+        monthTicks = chart.append('g')
         .attr({ 'class': 'month_ticks' });
 
     var monthTick = monthTicks.selectAll('g.month_tick')
@@ -125,13 +115,58 @@ Chart.prototype._drawMonthTicks = function (monthsData){
     // copy month ticks to the month tile
     monthTile.node().appendChild(chart.select('g.month_ticks').node().cloneNode(true));
 
-    this.tileMonthTicks = monthTile.select('g.month_ticks').selectAll('.month_tick');
+    this.tileMonthTicks = monthTile.selectAll('.month_tick');
 
-    this.monthTicks = monthTicks;
+    this.tileMonthTicks.attr('transform', 'translate(0, 0)');
 
-    this.monthTicksOffsets = monthsData.map(function (item, i){
-        return item.offset;
+    this.monthTicks = chart.selectAll('.month_tick');
+
+
+    // get nessacery ticks details
+    this.monthTicksOffsets = monthsData.map(function (item, i, arr){
+        var next = arr[i + 1],
+            edge = next ? next.offset : this.chartWidth;
+
+        return {
+            offset: item.offset,
+            edge: edge
+        };
+    }.bind(this));
+
+    // place the right tile
+    this.currentTileIndex = null;
+    this._placeRightTile(scrollLeft);
+};
+
+Chart.prototype._placeRightTile = function (scrollLeft){
+    var rightTileIndex = 0,
+        currentTileDetails;
+
+    this.monthTicksOffsets.forEach(function (item, i){
+        if ( scrollLeft >= item.offset && scrollLeft <= item.edge ) {
+            rightTileIndex = i;
+        }
     });
+
+    if ( this.currentTileIndex !== rightTileIndex ) {
+        this.monthTicks.classed('hidden', false).filter(':nth-child('+ (rightTileIndex+1) +')').classed('hidden', true);
+
+        this.currentTile = this.tileMonthTicks.filter(':nth-child('+ (rightTileIndex+1) +')');
+
+        this.tileMonthTicks.classed('hidden', true);
+
+        this.currentTile.classed('hidden', false);
+
+        this.currentTileIndex = rightTileIndex;
+    }
+
+    currentTileDetails = this.monthTicksOffsets[this.currentTileIndex];
+
+    if ( scrollLeft > (currentTileDetails.edge - 200) ) {
+        this.currentTile.attr('transform', 'translate(' + (currentTileDetails.edge - (scrollLeft + 200)) + ', 0)');
+    } else {
+        this.currentTile.attr('transform', 'translate(0, 0)');
+    }
 };
 
 Chart.prototype.getChartData = function (){
@@ -200,7 +235,6 @@ Chart.prototype._getTopValue = function (value){
 }
 
 Chart.prototype.render = function (data){
-
     var max = d3.max(data, function (item){
             return item.value;
         }),
@@ -213,8 +247,11 @@ Chart.prototype.render = function (data){
     // set the canvas width
     chart.attr('width', chartWidth);
 
+    this.chartWidth = chartWidth;
+
     // clear canvas
     chart.selectAll('*').remove();
+    d3.select('#month_tile').select('svg').selectAll('*').remove();
 
     chart.append('line')
         .attr({
@@ -240,7 +277,6 @@ Chart.prototype.render = function (data){
             .tickFormat( d3.format('s') ) );
 
     // draw bars
-
     if ( config.period === 'daily' ){
         this._drawDailyBars(data, y);
     } else {
