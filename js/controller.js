@@ -1,14 +1,14 @@
 var Chart = require('./chart'),
     chart = new Chart(),
     videoSelect = d3.select('#video_select'),
-    switchers = d3.selectAll('.switcher')
+    switchers = d3.selectAll('.switcher');
 
 function Controller (){
     // make this class a singleton
     if ( arguments.callee._singletonInstance ) {
         return arguments.callee._singletonInstance;
     }
-    arguments.callee._singletonInstance = this;   
+    arguments.callee._singletonInstance = this;
 }
 
 Controller.prototype.init = function (data){

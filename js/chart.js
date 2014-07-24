@@ -1,7 +1,9 @@
 var height = 300,
     barWidth = 40,
+    scrollWrapper = d3.select('.scroll_wrapper'),
     chart = d3.select('#chart').append('svg').attr('height', height + 40),
     scale = d3.select('#scale').append('svg').attr({ 'height': height + 20, 'width':60 }),
+    monthTile = d3.select('#month_tile').append('svg').attr({ 'height': height, 'width': 200 }),
     months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
     weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
 
@@ -25,12 +27,31 @@ function Chart (){
 }
 
 Chart.prototype.init = function (data){
+    var self = this;
     this.data = data;
     this.config = config;
 
     var chartData = this.getChartData();
+    this.monthTicksOffsets = [];
 
     this.render(chartData);
+
+    var sl = 0;
+    scrollWrapper.on('scroll', function (){
+        var scrollLeft = this.scrollLeft;
+
+        self.monthTicksOffsets.forEach(function (offset, i){
+            var relativeOffset = offset - scrollLeft;
+
+            if ( relativeOffset > 0 && relativeOffset < 200 ) {
+                d3.select(self.tileMonthTicks[0][0]).attr('transform', 'translate(' + (relativeOffset - 200) + ', 0)');
+
+                console.log('move tile');
+            } else if ( relativeOffset === 0) {
+                console.log('change tile');
+            }
+        });
+    });
 };
 
 Chart.prototype._getMonthsData = function (chartData){
@@ -41,20 +62,76 @@ Chart.prototype._getMonthsData = function (chartData){
         var currentMonth = '';
         return function (item, i){
             // use d3.time.format("%b %Y").parse;
-            var month = months[item.key.getMonth()] + ' ' + item.key.getFullYear();
+            var month = months[item.key.getMonth()],
+                year =  item.key.getFullYear(),
+                monthString = months[item.key.getMonth()] + ' ' + item.key.getFullYear();
 
-            if ( month !== currentMonth ) {
+            if ( monthString !== currentMonth ) {
                 monthsData.push({
-                    text: month,
-                    margin: i * barWidth
+                    monthString: monthString,
+                    month: month,
+                    year: year,
+                    offset: i * barWidth
                 });
 
-                currentMonth = month;
+                currentMonth = monthString;
             }
         }
     })());
 
     return monthsData;
+};
+
+Chart.prototype._drawMonthTicks = function (monthsData){
+    var monthTicks = chart.append('g')
+        .attr({ 'class': 'month_ticks' });
+
+    var monthTick = monthTicks.selectAll('g.month_tick')
+        .data(monthsData)
+        .enter()
+        .append('g')
+        .attr({
+            'transform': function(d, i) { return 'translate(' + d.offset + ', 0)'; },
+            'class': 'month_tick'
+        });
+
+    monthTick.append('line')
+        .attr({
+            'x1': 0,
+            'y1': 0,
+            'x2': 0,
+            'y2': height
+        });
+
+    var monthText = monthTick.append('text')
+        .attr({ 'x': 10, 'y': 0 });
+
+    monthText.append('tspan')
+        .attr({
+            'dy': '40px',
+            'x': '10',
+            'class': 'month_tick_month'
+        })
+        .text(function (d){ return d.month });
+
+    monthText.append('tspan')
+        .attr({
+            'dy': '40px',
+            'x': '10',
+            'class': 'month_tick_year'
+        })
+        .text(function (d){ return d.year });
+
+    // copy month ticks to the month tile
+    monthTile.node().appendChild(chart.select('g.month_ticks').node().cloneNode(true));
+
+    this.tileMonthTicks = monthTile.select('g.month_ticks').selectAll('.month_tick');
+
+    this.monthTicks = monthTicks;
+
+    this.monthTicksOffsets = monthsData.map(function (item, i){
+        return item.offset;
+    });
 };
 
 Chart.prototype.getChartData = function (){
@@ -149,29 +226,7 @@ Chart.prototype.render = function (data){
         });
 
     // draw month ticks
-    var monthTick = chart.selectAll('g.month_tick')
-        .data(monthsData)
-        .enter()
-        .append('g')
-        .attr({
-            'transform': function(d, i) { return 'translate(' + d.margin + ', 0)'; },
-            'class': 'month_tick'
-        });
-
-    monthTick.append('line')
-        .attr({
-            'x1': 0,
-            'y1': 0,
-            'x2': 0,
-            'y2': height
-        });
-
-    monthTick.append('text')
-        .attr({
-            'x': 10,
-            'y': 32
-        })
-        .text(function (d){ return d.text });
+    this._drawMonthTicks(monthsData);
 
     // draw scale
     scale.select('g').remove();

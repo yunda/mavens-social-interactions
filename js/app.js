@@ -10,4 +10,5 @@ function init (err, data){
 
     contoller.init(data);
     chart.init(data);
+
 }
