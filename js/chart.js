@@ -203,12 +203,18 @@ Chart.prototype._drawDailyBars = function (data, y) {
             'class': 'bar'
         });
 
-
     bar.append('rect')
         .attr({
             'shape-rendering': 'crispEdges',
             'fill': 'rgba(57, 186, 130, 0.3)',
             'width': barWidth,
+            'height': 0,
+            'class': 'bar_сolumn',
+            'transform': 'translate(0,'+ height +')'
+        })
+        .transition()
+        .duration(500)
+        .attr({
             'height': function (d){
                 return height - y(d.value);
             },
@@ -223,6 +229,12 @@ Chart.prototype._drawDailyBars = function (data, y) {
             'fill': 'rgba(57, 186, 130, 1)',
             'width': barWidth,
             'height': 2,
+            'class': 'bar_column_head',
+            'transform': 'translate(0,'+ height + ')'
+        })
+        .transition()
+        .duration(500)
+        .attr({
             'transform': function (d, i) {
                 return 'translate(0,'+ y(d.value) + ')';
             }
@@ -232,11 +244,20 @@ Chart.prototype._drawDailyBars = function (data, y) {
         .attr({
             'class': 'value',
             'x': barWidth / 2,
+            'y': height,
+            'fill-opacity': 0
+        })
+        .text(function(d) { return d.value; })
+        .transition()
+        .duration(500)
+        .attr({
             'y': function (d){
                 return y(d.value) - 5;
-            }
-        })
-        .text(function(d) { return d.value; });
+            },
+            'fill-opacity': 1
+        });
+
+    this.bar = bar;
 
     this._drawTimeline(bar);
 }
@@ -346,18 +367,60 @@ Chart.prototype._drawTimeline = function (bar){
         });
 }
 
-Chart.prototype.changeVideo = function (value){
-    config.video = value;
-    var chartData = this.getChartData();
+Chart.prototype.resetValues = function (callback){
+    var duration = 250,
+        timer = null;
 
-    this.render(chartData);
+    if ( config.period === 'daily' ) {
+        this.bar.selectAll('.bar_column_head')
+            .transition()
+            .duration(duration)
+            .attr({
+                'transform': 'translate(0,'+ height + ')'
+            });
+
+        this.bar.selectAll('.bar_сolumn')
+            .transition()
+            .duration(duration)
+            .attr({
+                'transform': 'translate(0,'+ height + ')',
+                'height': 0
+            });
+
+        this.bar.selectAll('.value')
+            .transition(function (){
+                console.log(1);
+            })
+            .duration(duration)
+            .attr({
+                'y': height,
+                'fill-opacity': 0
+            })
+            .each('end', function (){
+                clearTimeout(timer);
+                timer = setTimeout(callback, 100);
+            });
+    } else {
+        callback();
+    }
+}
+
+Chart.prototype.changeVideo = function (value){
+    
+    this.resetValues(function (){
+        config.video = value;
+        var chartData = this.getChartData()
+        this.render(chartData);
+    }.bind(this));
 };
 
 Chart.prototype.changeActivity = function (value){
-    config.activity = value;
-    var chartData = this.getChartData();
-
-    this.render(chartData);
+    
+    this.resetValues(function (){
+        config.activity = value;
+        var chartData = this.getChartData()
+        this.render(chartData);
+    }.bind(this));
 };
 
 Chart.prototype.changePeriod = function (value){
