@@ -386,7 +386,52 @@ Chart.prototype._drawGrossBars = function (data, y){
         .append('g')
         .attr({
             'transform': function(d, i) { return 'translate(' + i * barWidth + ', 0)'; },
-            'class': 'bar'
+            'class': 'bar gross_bar'
+        });
+
+    bar.append('text')
+        .attr({
+            'class': 'value',
+            'x': barWidth / 2,
+            'y': function (d){
+                return y(d.value) - 20;
+            }
+        })
+        .text(function (d){
+            return d.value;
+        });
+
+    bar.on('mouseover', function (){
+            var target = d3.select(this),
+                circle = target.select('.circle'),
+                circleStroke = target.select('.circle_stroke'),
+                value = target.select('.value');
+
+            circleStroke.attr({
+                'r': 8
+            });
+
+            circle.attr({
+                'r': 6
+            });
+
+            target.classed('hover', true);
+        })
+        .on('mouseout', function (){
+            var target = d3.select(this),
+                circle = target.select('.circle'),
+                circleStroke = target.select('.circle_stroke'),
+                value = target.select('.value');
+
+            circleStroke.attr({
+                'r': 6
+            });
+
+            circle.attr({
+                'r': 4
+            });
+
+            target.classed('hover', false);
         });
 
     bar.append('circle')
@@ -408,6 +453,7 @@ Chart.prototype._drawGrossBars = function (data, y){
                 return Math.round(y(d.value));
             }
         });
+
 
     this._drawTimeline(bar);
 }
@@ -479,9 +525,7 @@ Chart.prototype.resetValues = function (callback){
             });
 
         this.bar.selectAll('.value')
-            .transition(function (){
-                console.log(1);
-            })
+            .transition()
             .duration(duration)
             .attr({
                 'y': height,

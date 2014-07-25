@@ -5,9 +5,10 @@ body{
 }
 
 h1{
-    font-size: 36px;
+    font-size: 32px;
     font-weight: 700;
     margin-bottom: 30px;
+    text-transform: uppercase;
 }
 
 .hidden{
@@ -137,6 +138,21 @@ h1{
     fill: #fff;
 }
 
+.gross_bar .value{
+    transform: translate(0, 7px);
+    fill-opacity: 0;
+    -moz-transition: all 0.25s ease;
+    transition: all 0.25s ease;
+}
+
+.gross_bar.hover .value{
+    transform: translate(0, 0);
+    fill-opacity: 1;
+    -moz-transition: all 0.25s ease;
+    transition: all 0.25s ease;
+}
+
+
 .curve{
     fill: none;
     stroke-width: 2;
@@ -149,7 +165,7 @@ h1{
 
 #video_select{
     font-size: 24px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 #options_bar{
