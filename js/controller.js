@@ -1,5 +1,7 @@
 var Chart = require('./chart'),
+    PillsBar = require('./pills-bar'),
     chart = new Chart(),
+    pillsBar = new PillsBar(),
     videoSelect = d3.select('#video_select'),
     switchers = d3.selectAll('.switcher');
 
@@ -16,8 +18,9 @@ Controller.prototype.init = function (data){
     this.data = data;
 
     this.videoSelect = videoSelect;
+    this.switchers = switchers;
 
-    this._fillVideoSelect();
+    this.render();
     // attach events
     switchers.selectAll('span').on('click', function (e){
         var target = d3.select(this),
@@ -33,14 +36,13 @@ Controller.prototype.init = function (data){
 
     videoSelect.on('change', function (e){
         var videoIndex = +this.value;
-
-        chart.changeVideo(videoIndex);
+        self.switchVideo(videoIndex);
     });
 };
 
-Controller.prototype._fillVideoSelect = function (){
+Controller.prototype.render = function (){
     var videoNames = this.data.map(function (item, i){ return item.name; }),
-        videoUpdate = videoSelect.selectAll('options').data(videoNames);
+        videoUpdate = videoSelect.selectAll('option').data(videoNames);
 
     videoUpdate
     .enter()
@@ -51,6 +53,11 @@ Controller.prototype._fillVideoSelect = function (){
     .attr('value', function (d){
         return videoNames.indexOf(d);
     });
+};
+
+Controller.prototype.switchVideo = function (videoIndex){
+    chart.changeVideo(videoIndex);
+    pillsBar.changeVideo(videoIndex);
 };
 
 Controller.prototype.switchActivity = function (value){

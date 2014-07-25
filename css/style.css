@@ -23,6 +23,7 @@ h1{
 
 #chart_holder{
     position: relative;
+    margin-bottom: 20px;
 }
 
 #scale{
@@ -205,4 +206,33 @@ h1{
 #period_switcher{
     right: 0;
     margin-right: -7px;
+}
+
+#brands{
+    margin-bottom: 20px;
+}
+
+#brands_title{
+    display: inline-block;
+    vertical-align: top;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+#brands_holder{
+    display: inline-block;
+    vertical-align: top;
+}
+
+.brand_pill{
+    font-size: 18px;
+    font-weight: 400;
+    background: rgba(173, 173, 173, 1);
+    color: #fff;
+    border-radius: 5px;
+    margin: 0 7px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0 7px;
+
 }

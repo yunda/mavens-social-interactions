@@ -1,9 +1,10 @@
 var height = 300,
+    tileWidth = 200,
     barWidth = 40,
     scrollWrapper = d3.select('.scroll_wrapper'),
     chart = d3.select('#chart').append('svg').attr('height', height + 40),
-    scale = d3.select('#scale').append('svg').attr({ 'height': height + 20, 'width':60 }),
-    monthTile = d3.select('#month_tile').append('svg').attr({ 'height': height, 'width': 200 }),
+    scale = d3.select('#scale').append('svg').attr({ 'height': height + 20, 'width': 60 }),
+    monthTile = d3.select('#month_tile').append('svg').attr({ 'height': height, 'width': tileWidth }),
     months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
     weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
 
@@ -28,13 +29,12 @@ function Chart (){
 
 Chart.prototype.init = function (data){
     var self = this;
+
     this.data = data;
     this.config = config;
-
-    var chartData = this.getChartData();
     this.monthTicksOffsets = [];
 
-    this.render(chartData);
+    this.render(this.getChartData(data));
 
     scrollWrapper.on('scroll', function (){
         var scrollLeft = this.scrollLeft;
@@ -69,6 +69,121 @@ Chart.prototype._getMonthsData = function (chartData){
     })());
 
     return monthsData;
+};
+
+Chart.prototype.getChartData = function (){
+    // get an array of key-value objects
+    var dataHash = this.data[config.video][config.activity],
+        data = d3.map(dataHash).entries();
+
+    // parse date strings
+    data.forEach(function (item){
+        item.key = new Date(item.key);
+    });
+
+    // sort data by date
+    data = data.sort(function (a, b){
+        var aTime = a.key.getTime(),
+            bTime = b.key.getTime();
+        return aTime - bTime;
+    });
+
+    if ( config.period === 'daily' ) {
+        // make daily values
+        data = data.map(function (item, i){
+            var result = { key: item.key };
+
+            if ( i > 0 ){
+                result.value = item.value - data[i - 1].value;
+            } else {
+                result.value = item.value;
+            }
+            return result;
+        });
+    }
+
+    return data;
+};
+
+Chart.prototype._getTopValue = function (data){
+    var value = d3.max(data, function (item){
+            return item.value;
+        }),
+        digitsLength = value.toString().length,
+        zerosNumber = digitsLength - 1,
+        testNumber = '1',
+        max = 0,
+        residue;
+
+    if ( digitsLength <= 1 ){
+        max = 10;
+        return max;
+    }
+
+    while ( zerosNumber ) {
+        testNumber += '0';
+        zerosNumber--;
+    }
+    testNumber = +testNumber;
+
+    residue = value % testNumber;
+    rounded = value + (testNumber - residue);
+
+    if ( value < 100 ){
+        rounded = rounded.toString().split('');
+        rounded[0] = +rounded[0] > 5 ? '10': '5';
+        max = +(rounded.join(''));
+    } else {
+        max = rounded;
+    }
+    return max;
+};
+
+Chart.prototype.render = function (data){
+    var y = d3.scale.linear().domain([0, this._getTopValue(data)]).range([height, 0]),
+        scaleData = y.ticks(4).map(y.tickFormat(4, "d")),
+        chartWidth = data.length * barWidth,
+        monthsData = this._getMonthsData(data);
+
+
+    // set the canvas width
+    chart.attr('width', chartWidth);
+
+    this.chartWidth = chartWidth;
+
+    // clear canvas
+    chart.selectAll('*').remove();
+    d3.select('#month_tile').select('svg').selectAll('*').remove();
+
+    chart.append('line')
+        .attr({
+            'x1': 0,
+            'y1': height,
+            'x2': chartWidth,
+            'y2': height,
+            'class': 'timeline'
+        });
+
+    // draw month ticks
+    this._drawMonthTicks(monthsData);
+
+    // draw scale
+    scale.select('g').remove();
+
+    scale.append('g')
+        .attr('class', 'axis')
+        .call(d3.svg.axis()
+            .scale(y)
+            .orient('right')
+            .ticks(4)
+            .tickFormat( d3.format('s') ) );
+
+    // draw bars
+    if ( config.period === 'daily' ){
+        this._drawDailyBars(data, y);
+    } else {
+        this._drawGrossBars(data, y);
+    }
 };
 
 Chart.prototype._drawMonthTicks = function (monthsData){
@@ -116,14 +231,11 @@ Chart.prototype._drawMonthTicks = function (monthsData){
     monthTile.node().appendChild(chart.select('g.month_ticks').node().cloneNode(true));
 
     this.tileMonthTicks = monthTile.selectAll('.month_tick');
-
     this.tileMonthTicks.attr('transform', 'translate(0, 0)');
-
-    this.monthTicks = chart.selectAll('.month_tick');
-
+    this.chartMonthTicks = chart.selectAll('.month_tick');
 
     // get nessacery ticks details
-    this.monthTicksOffsets = monthsData.map(function (item, i, arr){
+    this.monthTicksRanges = monthsData.map(function (item, i, arr){
         var next = arr[i + 1],
             edge = next ? next.offset : this.chartWidth;
 
@@ -142,14 +254,14 @@ Chart.prototype._placeTile = function (scrollLeft){
     var rightTileIndex = 0,
         currentTileDetails;
 
-    this.monthTicksOffsets.forEach(function (item, i){
+    this.monthTicksRanges.forEach(function (item, i){
         if ( scrollLeft >= item.offset && scrollLeft <= item.edge ) {
             rightTileIndex = i;
         }
     });
 
     if ( this.currentTileIndex !== rightTileIndex ) {
-        this.monthTicks.classed('hidden', false).filter(':nth-child('+ (rightTileIndex+1) +')').classed('hidden', true);
+        this.chartMonthTicks.classed('hidden', false).filter(':nth-child('+ (rightTileIndex+1) +')').classed('hidden', true);
 
         this.currentTile = this.tileMonthTicks.filter(':nth-child('+ (rightTileIndex+1) +')');
 
@@ -160,7 +272,7 @@ Chart.prototype._placeTile = function (scrollLeft){
         this.currentTileIndex = rightTileIndex;
     }
 
-    currentTileDetails = this.monthTicksOffsets[this.currentTileIndex];
+    currentTileDetails = this.monthTicksRanges[this.currentTileIndex];
 
     if ( scrollLeft > (currentTileDetails.edge - 200) ) {
         this.currentTile.attr('transform', 'translate(' + (currentTileDetails.edge - (scrollLeft + 200)) + ', 0)');
@@ -168,121 +280,6 @@ Chart.prototype._placeTile = function (scrollLeft){
         this.currentTile.attr('transform', 'translate(0, 0)');
     }
 };
-
-Chart.prototype.getChartData = function (){
-    // get an array of key-value objects
-    var dataHash = this.data[config.video][config.activity],
-        data = d3.map(dataHash).entries();
-
-    // parse date strings
-    data.forEach(function (item){
-        item.key = new Date(item.key);
-    });
-
-    // sort data by date
-    data = data.sort(function (a, b){
-        var aTime = a.key.getTime(),
-            bTime = b.key.getTime();
-        return aTime - bTime;
-    });
-
-    if ( config.period === 'daily' ) {
-        // make daily values
-        data = data.map(function (item, i){
-            var result = { key: item.key };
-
-            if ( i > 0 ){
-                result.value = item.value - data[i - 1].value;
-            } else {
-                result.value = item.value;
-            }
-            return result;
-        });
-    }
-
-    return data;
-}
-
-Chart.prototype._getTopValue = function (data){
-    var value = d3.max(data, function (item){
-            return item.value;
-        }),
-        digitsLength = value.toString().length,
-        zerosNumber = digitsLength - 1,
-        testNumber = '1',
-        max = 0,
-        residue;
-
-    if ( digitsLength <= 1 ){
-        max = 10;
-        return max;
-    }
-
-    while ( zerosNumber ) {
-        testNumber += '0';
-        zerosNumber--;
-    }
-    testNumber = +testNumber;
-
-    residue = value % testNumber;
-    rounded = value + (testNumber - residue);
-
-    if ( value < 100 ){
-        rounded = rounded.toString().split('');
-        rounded[0] = +rounded[0] > 5 ? '10': '5';
-        max = +(rounded.join(''));
-    } else {
-        max = rounded;
-    }
-    return max;
-}
-
-Chart.prototype.render = function (data){
-    var y = d3.scale.linear().domain([0, this._getTopValue(data)]).range([height, 0]),
-        scaleData = y.ticks(4).map(y.tickFormat(4, "d")),
-        chartWidth = data.length * barWidth,
-        monthsData = this._getMonthsData(data);
-
-
-    // set the canvas width
-    chart.attr('width', chartWidth);
-
-    this.chartWidth = chartWidth;
-
-    // clear canvas
-    chart.selectAll('*').remove();
-    d3.select('#month_tile').select('svg').selectAll('*').remove();
-
-    chart.append('line')
-        .attr({
-            'x1': 0,
-            'y1': height,
-            'x2': chartWidth,
-            'y2': height,
-            'class': 'timeline'
-        });
-
-    // draw month ticks
-    this._drawMonthTicks(monthsData);
-
-    // draw scale
-    scale.select('g').remove();
-
-    scale.append('g')
-        .attr('class', 'axis')
-        .call(d3.svg.axis()
-            .scale(y)
-            .orient('right')
-            .ticks(4)
-            .tickFormat( d3.format('s') ) );
-
-    // draw bars
-    if ( config.period === 'daily' ){
-        this._drawDailyBars(data, y);
-    } else {
-        this._drawGrossBars(data, y);
-    }
-}
 
 Chart.prototype._drawDailyBars = function (data, y) {
     var bar = chart.selectAll('g.bar')
@@ -366,7 +363,6 @@ Chart.prototype._drawGrossBars = function (data, y){
             'class': 'area',
             'd': area
         });
-
 
     var line = d3.svg.line()
         .x(function(d, i) { return i * barWidth + (barWidth / 2); })
@@ -453,7 +449,6 @@ Chart.prototype._drawGrossBars = function (data, y){
                 return Math.round(y(d.value));
             }
         });
-
 
     this._drawTimeline(bar);
 }
