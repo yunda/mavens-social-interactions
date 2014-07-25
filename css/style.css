@@ -66,6 +66,10 @@ h1{
     stroke: #ccc;
 }
 
+#month_tile .month_ticks{
+    -moz-transform: translate(1px, 0);
+}
+
 .month_tick .month_tick_month{
     font-weight: 400;
     font-size: 32px;
@@ -80,6 +84,7 @@ h1{
 
 .axis{
     transform: translate(0, 10px);
+    -moz-transform: translate(1px, 10px);
 }
 
 .axis path,

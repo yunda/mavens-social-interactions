@@ -39,7 +39,7 @@ Chart.prototype.init = function (data){
     scrollWrapper.on('scroll', function (){
         var scrollLeft = this.scrollLeft;
 
-        self._placeRightTile(scrollLeft);
+        self._placeTile(scrollLeft);
     });
 };
 
@@ -135,10 +135,10 @@ Chart.prototype._drawMonthTicks = function (monthsData){
 
     // place the right tile
     this.currentTileIndex = null;
-    this._placeRightTile(scrollLeft);
+    this._placeTile(scrollLeft);
 };
 
-Chart.prototype._placeRightTile = function (scrollLeft){
+Chart.prototype._placeTile = function (scrollLeft){
     var rightTileIndex = 0,
         currentTileDetails;
 
@@ -203,8 +203,11 @@ Chart.prototype.getChartData = function (){
     return data;
 }
 
-Chart.prototype._getTopValue = function (value){
-    var digitsLength = value.toString().length,
+Chart.prototype._getTopValue = function (data){
+    var value = d3.max(data, function (item){
+            return item.value;
+        }),
+        digitsLength = value.toString().length,
         zerosNumber = digitsLength - 1,
         testNumber = '1',
         max = 0,
@@ -235,10 +238,7 @@ Chart.prototype._getTopValue = function (value){
 }
 
 Chart.prototype.render = function (data){
-    var max = d3.max(data, function (item){
-            return item.value;
-        }),
-        y = d3.scale.linear().domain([0, this._getTopValue(max)]).range([height, 0]),
+    var y = d3.scale.linear().domain([0, this._getTopValue(data)]).range([height, 0]),
         scaleData = y.ticks(4).map(y.tickFormat(4, "d")),
         chartWidth = data.length * barWidth,
         monthsData = this._getMonthsData(data);
@@ -497,7 +497,7 @@ Chart.prototype.resetValues = function (callback){
 }
 
 Chart.prototype.changeVideo = function (value){
-    
+
     this.resetValues(function (){
         config.video = value;
         var chartData = this.getChartData()
@@ -506,7 +506,7 @@ Chart.prototype.changeVideo = function (value){
 };
 
 Chart.prototype.changeActivity = function (value){
-    
+
     this.resetValues(function (){
         config.activity = value;
         var chartData = this.getChartData()
