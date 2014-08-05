@@ -1,7 +1,7 @@
 Mavens Social Interactions
 ==========================
 
-Maven Of London Front End Developer Assessment
+Mavens Of London Front End Developer Assessment
 
 
 [Demo](http://yunda.github.io/mavens-social-interactions)
